@@ -1,0 +1,80 @@
+.cartBg {
+	text-decoration: none;
+	background-image: URL(../_images/bg-cart.gif);
+	background-repeat: no-repeat;
+	height:75px;
+	width:148px;
+	padding:0px 5px 5px 0px;
+
+}
+
+.loginBg {
+	text-decoration: none;
+	background-image: URL(../_images/bg-login.gif);
+	background-repeat: no-repeat;
+	height:197px;
+	width:148px;
+	padding:0px 5px 5px 5px;
+}
+
+.VertMenuItems
+	{padding:0 0 0 5px;}
+
+
+.SmallNote:link {
+	COLOR: #888888; 
+	TEXT-DECORATION:none; 
+	FONT-SIZE: 9px; 
+	line-height:10px;
+	FONT-FAMILY: Arial, Verdana, Helvetica, Sans-serif;
+}
+
+.SmallNote:visited {
+       COLOR: #888888; 
+	TEXT-DECORATION: none; 
+	FONT-SIZE: 9px; 
+	FONT-FAMILY: Arial, Verdana, Helvetica, Sans-serif;
+}
+
+.SmallNote:hover {
+       COLOR: #888888; 
+	TEXT-DECORATION: underline; 
+	FONT-SIZE: 9px; 
+	FONT-FAMILY: Arial, Verdana, Helvetica, Sans-serif; 
+}
+
+.SmallNote:active {
+       COLOR: #888888; 
+	TEXT-DECORATION: none; 
+	FONT-SIZE: 9px; 
+	FONT-FAMILY: Arial, Verdana, Helvetica, Sans-serif;
+}
+
+.ProductDetailsTitle {
+	COLOR: #000000; FONT-WEIGHT: bold; FONT-SIZE: 11px;
+}
+
+.ProductTitle {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px;
+}
+
+.addLeftButton{
+	background-image: URL(../_images/but1.gif);
+	background-repeat: no-repeat;
+	height:21px;
+	width:5px;	
+}
+
+.addMidButton{
+	background-image: URL(../_images/butbg.gif);
+	height:21px;
+	width:25px;
+	padding-top:2px;
+}
+
+.addRightButton{
+	background-image: URL(../_images/but2.gif);
+	background-repeat: no-repeat;
+	height:21px;
+	width:6px;	
+}

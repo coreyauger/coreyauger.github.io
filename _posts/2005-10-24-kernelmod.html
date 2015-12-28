@@ -1,0 +1,52 @@
+---
+layout: post
+title:  "kernel mod"
+categories: projects
+---
+<article>
+  <h1><img src="images/iPlus.gif" width="12" height="12" alt="" border="0" align="absmiddle">&nbsp;kernel module</h1>
+  <p>Kernel Module<br>
+    Language: C<br>
+    Platform: Linux<br>
+  </p>
+
+  <h2>Intro</h2>
+  <p>This was an assignment in my system admin class.  Here is the notes and assignment that I handed into the instructor</p>
+
+  <p>
+    Hey Cliff,<br>
+    <br>
+    Very kewl assignment this time.  I am really
+    into this kernel mod stuff.  I decided to alter
+    the assignment a little... into an evil
+    assignment.  I was first going to write a module
+    that stole syscalls and spyed on them, but since
+    the syscall table is no longer exported in 2.6
+    kernels this was not an option.  So what I have
+    done instead was to write a device driver that
+    once you create the device node /dev/killpid you
+    can read and write to the device.  What you can do
+    then is 'echo "pid" > /dev/killpid' and my module
+    will use kernel functions to kill that process.
+    This allows anyone with perm to write to this device
+    to end any process on the system that they see fit.
+    Hance the 'evil' aspect to it ... muu ha ha ha.
+    <br><br>
+    Anyhow I will demonstrate its use on my system.. and
+    I plan on playing with this stuff a lot more.
+    Perhaps I will work on a kewl module for the project
+    in this class.  But like I said.. very kewl assignment.
+    <br><br>
+    Cheers,<br>
+    Corey Auger<br>
+  <p>
+
+  <h2>Files</h2>
+  <ul>
+    <li><a href="/files/module_killpid.c">module_killpid.c</a></li>
+    <li><a href="/files/module_killpid.h">module_killpid.h</a></li>
+    <li><a href="/files/module_killpid.Makefile">Makefile</a></li>
+    <li><a href="/files/module_killpid.compile">compile script</a></li>
+  </ul>
+</article>
+

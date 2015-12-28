@@ -1,0 +1,2 @@
+make -C /usr/src/linux-`uname -r` modules 
+

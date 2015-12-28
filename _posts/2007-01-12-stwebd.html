@@ -1,0 +1,130 @@
+---
+layout: post
+title:  "simple threaded web server"
+categories: projects
+---
+<article>
+  <h1><img src="/images/iPlus.gif" width="12" height="12" alt="" border="0" align="absmiddle">&nbsp;simple threaded web server</h1>
+  <p>Name: stwebd<br>
+    Language: C<br>
+    Platform: Linux/Solaris<br>
+  </p>
+
+  <p>This was a kewl assignment designed to teach us inter-process communication.  The assignment specifications are as follows:</p>
+
+  <h2>Assignment</h2>
+  <span style="font-weight: bold;">Problem:</span>
+  <p>You are to write a simple threaded web server.  It reads a configuration file which contains:</p>
+  <ul>
+    <li>The absolute path to the home location of the pages to be served</li>
+    <li>The port to use</li>
+    <li>Th maximum number of active connections allowed</li>
+    <li>The location of the log file</li>
+  </ul>
+
+  <p>Each connection will be a thread that remains until the connection is closed.  The only aspect of HTTP
+    that you must implement is a very simple version of the "GET" command.  Other things are nice but not really
+    necessary.  The web server will do the following upon the receipt of the indicated signal:</p>
+
+  <ul>
+    <li><b>SIGINT</b> Dump the status information to the status file</li>
+    <li><b>SIGHUP</b> Restart the web server. This is a hard restart, all active connections are closed.</li>
+    <li><b>SIGUSR1</b> Shutdown. Disallow new connections, wait for existing connections to shutdown, terminate the server.</li>
+    <li><b>SIGUSR2</b> Restart the web server.  This is a soft restart, let old connections finish with the old configuration, while new connections get the new configuration.</li>
+  </ul>
+
+  <p>You must also provide a man page for this program.  It must be formatted as all of the UNIX man pages
+    are formatted.  You may use either the nroff macros, or you may use SGML.  On-line documentation for both
+    exist on Solaris machines.</p>
+
+  <span style="font-weight: bold;">Hand In:</span>
+  <p>You must hand in a fully documented copy of your assignment.  You must demonstrate that it worked.
+    You must hand in the source for your manpage as well as a good formatted copy.</p>
+
+  <span style="font-weight: bold;">Rules</span>
+  <p>You may NOT use Java. You should use "C".  Socket calls and Signal handlers must be well indicated.
+    You should realize that very little systems programming is done in languages other than something based on "C".
+
+  <h2>My Solution</h2>
+  <p>My solution used ptheads.  I first read in the configuration file and created a thread pool of waiting threads.
+    For this I created a struct thats contents were the following:</p>
+  <code>
+    <br>
+    struct thread_data{<br>
+    &nbsp;&nbsp;&nbsp;pthread_t td_thread;<br>
+    &nbsp;&nbsp;&nbsp;int td_id;<br>
+    &nbsp;&nbsp;&nbsp;int td_socket;<br>
+    &nbsp;&nbsp;&nbsp;struct sockaddr_in td_client_addr;<br>
+    &nbsp;&nbsp;&nbsp;pthread_mutex_t *td_mutex_wait;<br>
+    &nbsp;&nbsp;&nbsp;pthread_cond_t  *td_cond_wait;<br>
+    &nbsp;&nbsp;&nbsp;void (*td_handler)( struct thread_data* );<br>
+    &nbsp;&nbsp;&nbsp;volatile sig_atomic_t td_active;<br>
+    &nbsp;&nbsp;&nbsp;void (*td_post_handler)( struct thread_data* );<br>
+    };<br>
+    <br>
+  </code>
+
+  <p>This encapsulates the thread as well as a wait condition and mutex for control over it.  The function
+    pointers allowed me to arbitrarily assign activities that the thread will work on.  The following function
+    controls the threads to do my evil bidding ;)</p>
+
+  <code>
+    <br>
+    1:void* threadManager( void* thread_args )<br>
+    2:{<br>
+    3:&nbsp;&nbsp;&nbsp;struct thread_data *tdata;<br>
+    4:&nbsp;&nbsp;&nbsp;tdata = (struct thread_data*)thread_args;<br>
+    5:&nbsp;&nbsp;&nbsp;for( ;; )<br>
+    6:&nbsp;&nbsp;&nbsp;{<br>
+    7:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if( tdata->td_post_handler )<br>
+    8:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(*tdata->td_post_handler)( tdata );<br>
+    9:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tdata->td_active = 0;<br>
+    10:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++threads_waiting;<br>
+    11:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if( pthread_cond_wait(tdata->td_cond_wait, tdata->td_mutex_wait) )<br>
+    12:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error("pthread_cond_wait failure");<br>
+    13:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tdata->td_active = 1;<br>
+    14:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tdata->td_socket = conn_fd;<br>
+    15:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pthread_mutex_unlock( tdata->td_mutex_wait );<br>
+    16:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(*tdata->td_handler)( tdata );<br>
+    17:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close( tdata->td_socket );<br>
+    18:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tdata->td_socket = 0;<br>
+    19:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;webConfig.sc_connserv++;<br>
+    20:&nbsp;&nbsp;&nbsp;}<br>
+    21:}<br>
+    <br>
+  </code>
+  <p>The thread pool work on the fact that all the pthreads enter the above function and enter a wait
+    state at line 11.  When the main thread receives a connection it wakes up one of the threads by signaling
+    on the condition variable.  That thread will take the socket and record its active state before unlocking
+    the mutext so that other threads may be signaled.  This will protect against the race condition of two threads
+    grabbing the same socket.  The thread then jumps to a handler function on line 16.  This function pointer was
+    initialized earlier on and is the main worker function for the thread.</p>
+
+  <p>This thread pool concept work very well for me and I would definitely extend it to other projects that
+    I am working on.  I realize that the explanation my be a little short... but I have included links to the
+    entire code below and you are always free to mail me with any questions: corey(at)coreyauger.com .</p>
+
+  <p>There was one other thing worth mentioning in this project.  It had to do with the way that the SIGUSR2
+    was handled.  In this condition the server closed the listening socket and set a codition variable thus causing
+    the main thread listening on it to error.  I then tested for the setting of the condition variable.  If it is set
+    then I fork a new process and wait on the live threads in the old process.  This has the effect of allowing the
+    old process with active threads to finish with the old config while a new process is created forcing the new config
+    parse to start up.  When the old process threads have completed we allow the process to die.  The signal code for this
+    is in the sighandles.c and the fork process can be seen in main.c .</p>
+
+  <p>Once again it will be more clear to anyone interested it they download the source code.</p>
+
+  <h2>Source Code</h2>
+  <p>Entire code in a tar format click <a href="/code/stwebd/stwebd.tar">here</a>.
+  <p>Or just view the files:
+  <ul>
+    <li><a href="/code/stwebd/main.c">main.c</a></li>
+    <li><a href="/code/stwebd/server.c">server.c</a></li>
+    <li><a href="/code/stwebd/server.h">server.h</a></li>
+    <li><a href="/code/stwebd/sighandles.c">sighandles.c</a></li>
+    <li><a href="/code/stwebd/sighandles.h">sighandles.h</a></li>
+    <li><a href="/code/stwebd/thread.c">thread.c</a></li>
+    <li><a href="/code/stwebd/thread.h">thread.h</a></li>
+  </ul>
+</article>
+

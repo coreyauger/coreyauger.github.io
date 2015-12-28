@@ -1,0 +1,283 @@
+---
+layout: post
+title:  "radiosity"
+categories: projects
+---
+<article>
+  <h1><img src="/images/iPlus.gif" width="12" height="12" alt="" border="0" align="absmiddle">&nbsp;radiosity</h1>
+  <p>Name: Radiosity<br>
+    Language: C/C++<br>
+    API: OpenGL<br>
+    Platform: Linux<br>
+    Authors: Auger, Corey and Wecker, Lakin<br>
+  </p>
+
+  <P><B>1. Project Goal</B></P>
+  <P>We plan on creating computer generated images of the best
+    quality through a synthesis of Radiosity and Ray Tracing. This
+    combination will allow us to simulate the diffuse, and specular
+    interactions in complex environments. Because both methods are
+    time consuming we will be using acceleration techniques in both.</P>
+  <P>These techniques include:</P>
+  <UL>
+    <LI><P>Octree generation for fast spatial determination.
+    </P>
+    <LI><P>Using graphics hardware Z-buffer for visibility
+      determination in radiosity solution.
+    </P>
+    <LI><P>Saving information into texture memory.
+    </P>
+    <LI><P>Mini-mapping hemi-cube information for form factor
+      calculations.
+    </P>
+    <LI><P>Distributed Ray Tracing techniques to simulate imperfect
+      reflections.
+    </P>
+  </UL>
+  <HR>
+  <P><B>2. Motivation</B></P>
+  <P>Computer generated images typically concentrate on one portion
+    of the lighting equation: either diffuse or specular lighting.
+    Recently, new algorithms, new data structures and concepts have
+    been researched to represent a more complete view of the lighting
+    in increasingly complex environments. The radiosity approach stems
+    from the want to simulate indoor environments where diffuse
+    lighting is the primary mode of heat transfer. Ray tracing
+    surfaced to simulate the way rays interact with reflective and
+    specular surfaces. These two approaches are typically separated,
+    however by combining the two one can look at both parts of the
+    lighting equation. This is extremely useful in indoor environments
+    with shiny reflective objects.</P>
+  <HR>
+  <P><B>3. Key Technical Challenges</B></P>
+  <P><I>Radiosity</I>
+  </P>
+  <P>With regards to radiosity the key challenges lie in the speed
+    and accuracy of the solution. We plan to exploit modern graphics
+    hardware to aid in the visibility and form factor calculations.
+    The main challenges will be with regard to the accuracy of the
+    solution. We plan on having a very adaptive solution to allow us
+    to experiment with different thresholds.</P>
+  <P>Additional challenges for the radiosity section is going to
+    come from 'tight' geometry. We would like our solution to be able
+    to handle models of any shape and complexity. With a hemi-cube
+    approach this will pose problems in tight corners where the
+    hemi-cube protrudes into geometry, or sees right through a faces
+    in the geometry. In this case we are going to have to test the
+    area around the hemi-cube and do some work to not allow the
+    hemi-cube to pierce the geometry.</P>
+  <P><I>Ray Tracer</I>
+  </P>
+  <P>The Key technical challenge for the ray tracer will be the
+    lighting model to use when combining the final information into a
+    pixel color to display on the screen. There will be texture
+    mapping details, the light map representing the diffuse and
+    ambient lighting for the triangle, as well as the specular
+    information gathered by the ray tracer. We plan to use
+    Cook-Torrance lighting to achieve a more realistic colors and
+    images.
+  </P>
+  <HR>
+  <P><B>4. Approach</B></P>
+  <P><B>4.1 Overview</B></P>
+  <P><I>Radiosity</I>
+  </P>
+  <P>Dividing each face of our scene into light-map texel regions,
+    we are going to perform a gathering type of radiosity solution.
+    First by using GL to render the scene from the perspective of a
+    texel into a hemi-cubed texture map, we solve the visibility
+    problem. After applying a lambertian mask over the pixels and
+    perspective correction we then evaluate the hemi-cube as a 1x1
+    mini-map. This will be our form-factor calculation. This value
+    gets stored in the light-map location that was being evaluated.
+    This continues until we have converged on a solution. To further
+    speed this process up we would only calculate (in between) pixels
+    if they did not meet an interpolation threshold. This will allow
+    for adaptive sampling at shadow boundaries. Additionally our scene
+    is in an Octree format, so we will perform frustum culling and
+    only pass vertices's to the renderer that the point can see. This
+    should yield an acceptable upper limit on the complexity of most
+    complex scenes.</P>
+  <P ALIGN=CENTER STYLE="margin-bottom: 0in">
+  <div align="center">
+    <IMG SRC="/images/hc.jpg" NAME="Graphic1" ALIGN=BOTTOM border="1"></div></P>
+  <P><BR><BR><I>Ray Tracer</I>
+  </P>
+  <P>The geometry will be loaded into an Octree to accelerate the
+    intersection routines. The ray tracer will use the typical Ray
+    Tracing technique by shooting rays from the eye, through the
+    screen pixels and into the scene. The Octree will provide a quick
+    intersection with surfaces in the scene. Then the ray tracer will
+    analyze the properties of the intersection object. Based on this
+    information it will ascertain whether it's necessary to recurse to
+    obtain the reflected light. This will automatically be cutoff at a
+    specified recursion level. The reflection rays will be shot in
+    varying ways. We will store a reflection index which indicates how
+    &quot;perfect&quot; the patch reflects light. We will always shoot
+    16 rays, but the angle from the perfect reflection ray to the
+    actual rays shot will be determined by the index. The greater the
+    angle, the less perfect of a reflection is shot. Once all of the
+    specular data has been obtained at a particular intersection, it
+    will be combined with the diffuse information stored from the
+    radiosity solution.
+  </P>
+  <HR>
+  <P><B>5 Results</B></P>
+  <P><I>Radiosity</I>
+  </P>
+  <P STYLE="margin-bottom: 0in"><div align="center"><IMG SRC="/images/3pass.jpg" NAME="Graphic2"></div>
+  <BR>This image shows the cornel box after 3 passes. It looks very
+  close to a full solution and we are quite proud of this image. The
+  light on the roof really shows off the radiosity approach, as well
+  as the color bleeding.
+  </P>
+  <HR>
+  <P STYLE="margin-bottom: 0in">
+  <div align="center">
+    <IMG SRC="/images/2pass_softshaddow.jpg" NAME="Graphic3"></div>
+  <BR>This image shows the cornel box after 2 passes. It was taken
+  to show the accurate computation of soft shadows.
+  </P>
+  <HR>
+  <P STYLE="margin-bottom: 0in"><BR>
+  <div align="center"><IMG SRC="/images/room1.jpg" NAME="Graphic4"></div>
+  <BR><div align="center"><IMG SRC="/images/room1a.jpg" NAME="Graphic5"></div>
+  This image shows a a typical indoor scene. The artifacts along the
+  edge of the pillars show a flaw in the lightmap method where
+  opengl interpolates to a black color which is on the edge of the
+  lightmap's triangle. However, the tables look amazing and in
+  general the scene's lighting looks very realistic.
+  </P>
+  <HR>
+  <P><BR>( missing octree graphic )
+
+    <BR>This is the only scene we currently have that shows off the
+    ray tracing algorithm. It shows an opengl rendering of the
+    axis-aligned bounding boxes that form the octree for a spider
+    mesh. This really shows off the adaptive nature of an octree, as
+    the space where geometry is really crowded, are subdivided even
+    further and low polygon areas.
+  </P>
+  <P>As you can see our engine is not yet complete. We will tweaking
+    the radiosity algorithm to remove the artifacts and merging the
+    ray-tracing algorithm with the radiosity solution, in the next few
+    days and expect to have this fully working by our demo on friday.
+  </P>
+  <P><B>6 Conclusion</B></P>
+  <P><I>Radiosity</I>
+  </P>
+  <P>Implementing radiosity in hardware using OpenGL has turned out
+    to be much harder than originally anticipated. OpenGL is not well
+    suited to the algorithm, and much care must be taken to use it
+    correctly. It does lend itself well to generating the hemicube
+    from points on the triangles, however this information cannot be
+    read directly from the texture memory. To solve this we had to
+    render the hemicube to the screen and read the frame buffer
+    memory. However this clamps all values to 0.0-1.0. This does not
+    allow really bright lights to be used, and care must be taken to
+    use the correct model when dealing with this.
+  </P>
+  <P>Once the hemicube is generated this information is combined
+    into a single pixel value in the lightmap which pertains to the
+    current point on the triangle. The only problem encountered in
+    this was the alias problem where the middle of a lightmap pixel
+    related to a point in object space that did not receive any light.
+    However part of that lightmap pixel is included in the triangle's
+    u-v texture mapping space. This create artifacts along edges of
+    walls and and in corners. Care was then taken to correctly sample
+    these edges in the lightmaps to generate the correct light at that
+    position.
+  </P>
+  <P><B>Performance</B>
+  </P>
+  <P>Our program operates at an efficiency that is dependent on the
+    area of the scene that requires sampling. In this manor we can
+    operate somewhat independent of the triangle complexity of the
+    scene. If we had time to integrate the octree into the radiosity
+    solution, we could then only pass visible geometry to the hemicube
+    renderer. In this manor we would more be affected by the
+    additional lightmaps that needed to be sampled and not by the
+    complexity of the scene.</P>
+  <P>The advantage of our stratagy is that it allows you to
+    adaptively choose heuristics. These include:
+  </P>
+  <UL>
+    <LI><P STYLE="margin-bottom: 0in">Size of the hemicube.
+    </P>
+    <LI><P>Triangle Area to lightmap ratio.
+    </P>
+  </UL>
+  <P>To further improve the performance we only sample points that
+    will be in the triangle. The algorithm to determine this
+    relationship can be done in 2D texture space and is thus way
+    faster then the inner angle theorem in 3D. We had planned a
+    further improvement but failed in the time we have left to
+    implement it. This improvement would allow you to sample every N
+    number of pixels on the grid in your first pass through the map.
+    You then look at the bilinear difference in the samples that you
+    have taken. If they are within a threshold then you take simply
+    interpolate. If they are not then you sample again in between
+    these points. Full details on this can be found on Hugo Elias
+    <A HREF="http://freespace.virgin.net/hugo.elias/radiosity/radiosity.htm">website</A>.
+  </P>
+  <P>Another advantage is that after every pass you can walk your
+    camera around the room in real time and check for an problems thus
+    far in the solution. If you are happy with the current solution
+    you can save the lightmaps out to disk and begin the program on
+    another pass.</P>
+  <P>Edge Artifacts.</P>
+  <P>
+  <div align="center"><IMG SRC="images/box3.jpg" NAME="Graphic7"></div>
+  <bR>
+  <div align="center">
+    <IMG SRC="/images/prob.jpg" NAME="Graphic8">
+  </div>
+  </P>
+  <P>Sampling the pixel at position A yields a result that is inside
+    the triangle and looking at the light. Sampling at position B
+    gives us in many occasions a sample from inside the wall ( or
+    totally black ). Once we interpolate the result we have an edge
+    that fades to black. The solution to this is to detect the
+    boundary cases and sample for point B a sample from right on the
+    triangles edge.</P>
+  <P>This problem should be fixed by Friday :)
+  </P>
+  <P><I>Ray-Tracing</I>
+  </P>
+  <P>Unfortunately the ray-tracing part of the system has not yet
+    produced any usable results. The geometry is loaded into an
+    octree, and the intersection tests for the octree have been
+    perfected which yields reasonably fast times on models of medium
+    size. However the light model to combine the specular and diffuse
+    lighting from the radiosity has not yet been implemented to a
+    usable state. We have included a picture of an OpenGL rendering of
+    the Axis-Aligned Bounding Boxes for the octree which was created
+    for a 21,000 face mesh. The mesh is not rendered to show you how
+    the geometry is centered.
+  </P>
+  <HR>
+  <P><B>7. List of References</B></P>
+  <UL>
+    <LI><P>Hugo
+      Elias<BR><A HREF="http://freespace.virgin.net/hugo.elias/radiosity/radiosity.htm">http://freespace.virgin.net/hugo.elias/radiosity/radiosity.htm</A></P>
+    <LI><P>Radiosity on Graphics Hardware<BR>Greb Coombe, Mark J.
+      Harris, Anselme Lastra<BR>Department of Computer Science,
+      University of North Carolina, Chapel Hill, North Carolina, USA</P>
+    <LI><P><A HREF="http://pages.cpsc.ucalgary.ca/~mario/W03-CL-591/project/proposal/Auger_Wecker/PR/5-radiosity/readings/p75-cohen.pdf">A
+      progressive refinement approach to fast radiosity image
+      generation</A><BR>Michael F. Cohen, Shenchang Eric Chen, John R.
+      Wallace, Donald P. Greenberg<BR>SIGGRAPH '88, Pages: 75 - 84</P>
+    <LI><P>Wallace, John R., Michael F. Cohen, Donald P. Greenberg<BR>A
+      Two-Pass Solution to the Rendering Equation: A Synthesis of Ray
+      Tracing and Radiosity Methods<BR>Proceedings of SIGGRAPH'87, In
+      Computer Graphics, Vol. 21, No. 4, July 1987, pp. 311-320</P>
+    <LI><P>Cook, Robert L., Porter, Thomas, Carpenter
+      Loren<BR>Distributed Ray Tracing<BR>In Computer Graphics, Vol.
+      18, No. 3, July 1984, pp. 137-145
+    </P>
+  </UL>
+
+
+
+</article>
+

@@ -1,0 +1,53 @@
+STWEBD(1)                        User Manuals                        STWEBD(1)
+
+
+
+NNAAMMEE
+       stwebd - simple threaded web server deamon
+
+SSYYNNOOPPSSIISS
+       ssttwweebbdd
+
+DDEESSCCRRIIPPTTIIOONN
+       ssttwweebbdd  iiss aa ssiimmppllee tthhrreeaaddeedd wweebb sseerrvveerr.. TThheerree aarree aa nnuummbbeerr ooff seetings
+       that you can configure in the config file.   These  settings  are  read
+       into  the  web  server  when  it  starts up.  When the server starts it
+       begins listening to an assigned port for incomming connections.  When a
+       connection  is  recieved  the  server  signals  a  thread to handle the
+       request.  So far the only requests that can be handled are  simple  GET
+       requests.  The surver simply opens the requested file and returns it to
+       the requestor or an appropriate error message.
+
+SSIIGGNNAALLSS
+       SSIIGGIINNTT Dump the status information to stdout
+
+       SIGUSR1 Shutdown. Disallow new connections, wait for  existing  connec-
+       tions to shutdown, terminate the server.
+
+       SIGUSR2  Restart  the web server.  This is a soft restart, let old con-
+       nections finished with the old configuration, while new connections get
+       the new configuration.
+
+       SIGHUP Restart the web server.  This is a hard restart, all active con-
+       nections are closed.
+
+
+FFIILLEESS
+       _._s_r_v_c_f_g
+              This is the main configuration file for  the  web  server.   The
+              file  lets  you specify options in a OPTION VALUE format.  There
+              are 4 options that you can currently list for the server.   They
+              are:  PORT, CONNECTIONS, LOGPATH, and PAGEPATH.  The port is the
+              active port that the server should listen on.  Connections spec-
+              ifies the number of threads that you wish to have waiting around
+              to service a request.  The logpath is the absolute or  realative
+              path  to  the  Log  File.   The  final option specifies the root
+              directory for the web pages that you want to server.
+
+AAUUTTHHOORR
+       CCoorreeyy AAuuggeerr
+
+
+
+
+Linux                            NOVEMBER 2004                       STWEBD(1)

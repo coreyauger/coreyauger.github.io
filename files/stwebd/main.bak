@@ -1,0 +1,69 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#define TCP_UDP 0		// TCP or UDP protocol depending on socket
+#define PORT 6969		// dirty little default port
+#define CONNECTIONS 5		// number of waiting connections
+#define BUFFER_LEN 256
+#define CONFIG_FILE "server.cfg"
+
+
+void error( char *msg )
+{
+	perror( msg );
+	exit( 0 );
+}
+
+
+void parseConfigFile( char *filename )
+{
+	FILE *configfd;
+	configfd = fopen( CONFIG_FILE, "r" );
+	if( !configfd )
+		error( "fopen failed" );
+	
+	
+}
+
+
+int main( int argv, char *argc[] )
+{
+	// load config info
+	// print config info to log
+	
+	int socketfd, connfd, bytes_read, socket_len;
+	struct sockaddr_in server_addr, client_addr;
+	char buffer[ BUFFER_LEN ];
+	
+	socketfd = socket( AF_INET, SOCK_STREAM, TCP_UDP);	// get a socket fd entry
+	if( socketfd < 0 )
+		error("socket failed");
+	bzero( (char*)&server_addr, sizeof( server_addr) );	// zero our memory
+	server_addr.sin_family = AF_INET;		// set domain to internet
+	server_addr.sin_port = htons( PORT );		// set port ( in network byte order)
+	server_addr.sin_addr.s_addr = INADDR_ANY;	// set server IP to this machinge
+	if( bind( socketfd, (struct sockaddr*)&server_addr, sizeof(server_addr) ) < 0 ) // assign a name to the socket
+		error("bind failed");
+	if( listen( socketfd, CONNECTIONS ) < 0)	// listen for connectionsi *** NEED TO READ MORE ON MAX CONN
+		error("listen failure");
+	socket_len = sizeof( client_addr );
+	connfd = accept( socketfd, (struct sockaddr*)&client_addr, &socket_len );
+	if( connfd < 0 )
+		error("accept failed");
+	for(;;)
+	{
+		bzero( buffer, BUFFER_LEN );
+		bytes_read = read( connfd, buffer, BUFFER_LEN-1 );
+		if( bytes_read < 0 )
+			error("read error");
+		printf("%s\n", buffer );
+	}
+	return 0;
+}
+

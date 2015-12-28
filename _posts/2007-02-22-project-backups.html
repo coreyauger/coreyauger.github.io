@@ -1,0 +1,170 @@
+---
+layout: post
+title:  "Reed Solomon Coding"
+categories: projects
+---
+<article>
+  <h1><img src="images/iPlus.gif" width="12" height="12" alt="" border="0" align="absmiddle">&nbsp;Reed Solomon Coding</h1>
+  <p>Name: Reed Solomon Coding<br>
+    Language: C/C++<br>
+    Platform: Linux<br>
+  </p>
+
+
+  <H2><A NAME="s1"></a>Intro</H2>
+
+  <P>Our backup system has taken into consideration everything that a user would require for a safe efficient backup experience.  We then took all the ideas and grouped them into convenient modules.  These four modules include:
+  <UL>
+    <LI>Reed Solomon Encoding, for RAID like fault tolerance.</LI>
+    <LI>Encryption and Md5 encoding for security.</LI>
+    <LI>Database management of transactions that occur.</LI>
+
+    <LI>Networking for peer data transfers.</LI>
+  </UL>
+  </P>
+  <HR>
+
+
+  <H2><A NAME="s2"></a>Motivation</H2>
+  <H3>Current Technologies</H3>
+  <P>Current technologies include data warehousing centers, on-site tape or DVD backup, raid arrays, and many more.  These all have advantages/disadvantages and costs associated with them.  For the average home computer user, the most efficient and cost effective route is to backup data onto a DVD or tape medium.  This allows for the user to regularly schedule backups, assuming he or she is there to contend with changing, buying, labeling, and storing the medium of choice.  Industry relies on somewhat stricter practices and standards, especially when you get into the data warehouse business.  These have the advantage of being fully automated, fault tolerance, and insured by large brokerage houses.  The obvious draw back is the cost associated with this.  We have taken the step to bring data warehousing into a smart, efficient, and publicly free manor.</P>
+
+  <H3>Our Solution</H3>
+  <P>Our Solution has borrowed ideas from the fault tolerance RAID systems, peer-to-peer networking, and data encryption.  Combined with the cheap price of disk space we will allow users from all over the world to safely and securely store and manage backup data.  We allow an automation to the backup process and give you control over the size and parties that are included in your distributed network.</P>
+
+  <HR>
+
+
+
+  <H2><A NAME="s3"></a>Program Flow</H2>
+
+  <H3>Commands</H3>
+  <P>When the program is started the network manager begins to listen on the port that the user has specified for connections.  The peer list configuration file is then parsed and a peer discovery routine occurs.  This establishes a list of active peers that can be drawn upon for data storage and recovery.  The user is then given an active command prompt to perform transactions with.  The two simple commands that are implemented are the:
+  <UL>
+    <LI>archive &lt;filename&gt;</LI>
+    <LI>get &lt;filename&gt;</LI>
+  </UL>
+  </P>
+
+  <H3>archive</H3>
+  <P>The archive command takes a file and starts the backup process.  This process involves reading the file and splitting it into N chunks, called data chunks.  When the N data chunks have been assembled we store an MD5 hash of the file and some other minimal book keeping information in a header of each data chunk.  Each data chunk is then encrypted and sent to the Reed Solomon encoder.  The Reed Solomon Encoder then computes M checksum chunks, where M &lt;= N.  The database is then updated to reflect the process that has occurred.  Once this is complete the chunks are forwarded to the Network Manager to disperse the chunks to your peers.           </P>
+  <P>When a peer receives a request to store a chunk, it negotiates the chunk transfer and begins the storage process.  When the chunk has been received, it is forwarded to the Database for book keeping procedures.  The database stores the Chunk in a .data section and records book keeping information into the database.  It is worth noting that the only information that is stored is the MD5 sum of the original file.  There is no indication as to what the original file contained, how many chunks are out there, and whether or not the chunk you have is a data or checksum chunk.  This makes it near impossible for a  peer to recover the contents of chunks that are not addressed to it.</P>
+
+  <H3>get</H3>
+  <P>The get command takes a filename and makes a request to the database manager to recover the file.  The db manager knows the name of files that you have backed up, as well as the md5, and number of chunks.  The md5 sum is relayed to the network manager to start the recovery process.  The network manager makes requests to the peers in it's active peer list for any chunks of the file.  The peers then begin the concurrent process of sending the chunks back to the client.  When a chunk is received it is given to the database manager to record the chunk.  Once N chunks of any type has been received from the possible N+M chunks, the network manager is reset and the data recovery process begins.  This process involves the Reed Solomon encoder recomputing lost chunks of data.  Once all the data is intact we send the data to be unencrypted.  The recovered file is then written to disk.</P>
+  <HR>
+
+
+
+
+  <H2><A NAME="s4"></a>Reed Solomon Encoder               </H2>
+
+  <H3>Explanation</H3>
+  <P>Reed Solomon Encoding works on the following bases.  Let there be n storage devices D1, D2, ....Dn, each which hold k bytes of data.  These are our data chunks.  Let there by m storage devices C1, C2,....Cm,, that hold k bytes of data.  These are our checksum chunks.  The data in each checksum is calculated from the data chunks.  The goal is to define a calculation Ci such that if any m of D1, D2, ....Dn, C1, C2,....Cm, fails, The data in the failed chunk can be reconstructed.</P>
+  <P>The calculation of the Checksum Ci requires a function Fi such that Fi operates on the ?word? data applied to all Data Chunks.  So Cij = Fi( D1j, D2j, .... Dnj ) where j is the array subscript into the data of size ?word?.  Next we need to define the function Fi.  This function can be defined to be a linear combination of the data words.  So if we take this as our Chunks to be rows in a matrix, then the system adheres to the following:
+  <UL>
+    <LI>FD=C</LI>
+  </UL>
+  </P>
+  <P>Where D is a n x 1 Matrix containing the data chunks.  C is an m x 1 Matrix that contains the Checksum chunks.  F is then m x n Vandermonde matrix: Fij = j^i-1.</P>
+  <P>To recover from errors we define a matrix A and a vector E as follows A = [ 1,F ] and E=[ D,C ]. Then we have the following equation (AD = E ).  We can view each chunk in the system as having a row in A that corresponds to a row in E.  So when we have a failure in a chunk we simply delete that row from the Matrix A and E.  The result is a new matrix A' and E' such that:</P>
+  <P>
+
+  <UL>
+    <LI>A'D = E'</LI>
+  </UL>
+  </P>
+  <P>We then make sure that this is a square matrix by removing any more rows we wish till it is square.  Since F is defined to be a Vandermode matrix, each subset of n rows A is linearly independent.  Thus means that A' is non-singular, and the values of D may be calculated from A'D =E' using Gaussian Elimination.  This means that all data devices can be recovered.</P>
+  <P>One of the concerns is that the domain and range of the computation are binary words of a fixed length ?word?.  The algebra above with work with infinite precision real numbers, a courtesy that we do not have in a computer.  It is for this reason that we must use a Galois Field for our arithmetic.  This will allow us to perform division and multiplication over this field, rendering the Gaussian Elimination solvable.</P>
+
+  <H3>Limitations</H3>
+  <P>The Reed Solomon Works very well.  There are some speed concerns for very large files however.  Perhaps a way to read in and compute the code at the same time would help the overall performance of the program.</P>
+
+  <H3>Future Expansions</H3>
+
+  <P>We templated the ?word? size for the Galois field and matrix calculations.  This allows us to shift between 8, and 16 bit words.  Perhaps in the future being able to use a word size of 32 bit.  The reason for the limitation, is do to memory constraints on the table size.  An 8 bit table 2Kb of memory, a 16 bit ?word? jumps that table size to around 2MB, while a 32 bit ?word? makes the table size almost one 1TB.  You could dynamically arrive at values in the table rather then storing them in memory, but this immediately destroys the performance over it's 16bit counterpart.</P>
+  <HR>
+
+
+
+  <H2><A NAME="s5"></a>Database Manager</H2>
+
+  <H3>Explanation</H3>
+  <P>The database manger is the heart of the communication process.  It interfaces the user with the Reed Solomon Encoder, Encryption, and Networking facilities.  Right now we made a simple database system.  The database consists of flat files with Md5 sums as keys for row items in the file.  This provides for a slow O(n) performance on data lookup and acquisition.  In a large system with lots of files that are being backed up, this would become unacceptable.  The database uses a data structure called a DbRecord.  These DbRecords have overloaded operators for reading in and out data.  This makes the code neat and tight like a tiger.</P>
+
+  <H3>Limitations</H3>
+  <P>The obvious limitation is the lookup time into the database.  There are a few other things that we should be storing to improve the performance of the finished product.  These would include storing information on the peers and what they have in a redundant fashion.  That way as peers went off line and we started to approach the fault tolerance of a particular file, we could organize the redistribution of that file.</P>
+
+  <H3>Future Expansions</H3>
+  <P>Using a real SQL database to store that data transactions.</P>
+  <HR>
+
+
+
+  <H2><A NAME="s6"></a>NetworkManager</H2>
+
+  <H3>Explanation</H3>
+  <P>The network manager acts a layer between the physical network and the Database Manager.  This system is organized as a peer-to-peer network similar to the various file sharing services currently available, such as the gnutella network.  However, our system is by no means a file sharing utility, our use of the peer-to-peer model is simply to avoid the overhead of the client server model.  The NetworkManager uses a C++ socket wrapper library found at http://www.alhem.net/Sockets/index.html, it is GPL licensed software.</P>
+  <P>When started the Network Manager reads the peers it knows about from its configuration file.  Currently, the Network Manager assumes that all peers are up and running.  There is code implemented to test peer connections with ping and pong functionality, but the use of these are left for future enhancements.  The Network Manager is also responsible for the command line interface.  The socket API we are using allowed creating a socket to stdin, which we are taking advantage of.  Therefore, when the user types in a command it is actually first handled by the Network Manager module then passed to the Database Manager, often the Database Manager will forward the request back to the Network Manager.</P>
+
+  <P>Once the Network Manager has been started requests are going to come from two places: other peers on the network or the local Database Manager.  First we will consider requests from the local Database Manager.  Currently the Database Manager can preform two tasks: archiving a file or attempting to reconstruct a file.  When archiving a file the Database Manager will pass the created chunks of the file to the Network Manager for dispersal to other peers on the network.  The Network Manager distributes the chunks equally among all the peers it knows about.  The Database Manager is not informed what chunks went where.  Second, the Database Manager may request to retrieve all chunks of a file from peers on the network.  The Network Manager will send a request to all known peers asking for chunks of the file requested.  The initial call from the Database Manager to the Network Manager will block until the first chunk of that file arrives from one of the peers on the network.  Presumably, one chunk will not be enough data to reconstruct the file, so the Database Manager will make repeated blocking requests to the Network Manager for chunks and the Network Manager will provide chunks as they arrive.  At some point the Database Manager will have enough chunks to recreate the file, at this time the Database Manager will inform the Network Manager so all other chunks received can safely be ignored.</P>
+
+  <H3>Limitations</H3>
+  <P>At time of writing the archive functionality works but the the get functionality is not working.  We are hoping to have both the get and archive functionality working by demonstration time.</P>
+
+  <H3>Future Expansions</H3>
+  <P>At time of writing the Network Manager has some bare bones functionality to archive and get files.  There are many additions that would need to be made to have a more robust system.  First, dynamic discovery of peers is needed.  Currently, peers on the network are specified in a static file.  When a peer starts up for the first time it needs a mechanism for finding peers.  One solution would be to seed the initial peer and have a mechanism to query for more know peers.  One possible solution would be to implement something similar to how routers discover other routers on a network.  What peers a host knows about should be kept and persisted through reboots.  When a host comes back up there should be a mechanism for determining if formerly known peers are still alive.</P>
+  <P>The system expects the number of peers to be relatively dynamic.  That is, peers may come and go.  This presents a problem.  Peers have chunks of certain files, if too many peers holding a certain file go down it may become impossible to recover that file.  The Network Manager has to have a mechanism to determine if a peer is down temporarily or if the peer is probably gone completely.  Furthermore, there must be a mechanism to query peers and determine if they have chunks of a certain file.  To illustrate this last point an example will be used.  Assume that host A archives a file resume.pdf.  Over time host A would like to know what chunks of resume.pdf peers have and determine what the chances are that the file could actually be recreated.  Because of the dynamic nature of peers, host A could find that there are enough chunks in the network to recreate the file but perhaps these chunks are concentrated in a small number of hosts.  In addition, host A might conclude that so many peers have disappeared recreating the files may be impossible.  Assuming that host A has not already lost resume.pdf, it would be nice if host A could ask all peers holding chunks of resume.pdf to drop those chunks and host A would re-encode resume.pdf and have the Network Manger redistribute.  Also, if all the chunks exist on the network but are concentrated among a few peers a mechanism to redistribute those chunks without having to re-encode the file would be nice.</P>
+  <HR>
+
+
+
+  <H2><A NAME="s7"></a>7.Encryption</H2>
+
+  <H3>Intro</H3>
+
+  <P>this class is to deal with anything to do with encryption, it only uses
+    openssl for it's functions. to compile, remember to use the -lssl and -lcrypto
+    calls for the linker.</P>
+
+  <H3>readMD5</H3>
+
+  <P>will take a string, open a file with that string, and create an MD5 hash
+    of the file.  The main problem with this function, which we have resolved
+    with a rather ugly hack, is that openssl returns the md5 hash in a
+    unsigned char format, Corey found the solution to this by
+    for ( int i=0; iDIGEST_LENGTH; i++){ //converts from unsingned char*
+    sprintf( (char*)[i],"%x", md[i] ); //to char*
+    also, it should throw an exception if the filename is invalid, and is marked
+    TODO for that.</P>
+
+  <H3>GenerateKey</H3>
+  <P>This will generate a key from /dev/random, the key is 128 bits, and it also
+    generates a 64 bit initial vector.  this is used because in a modern crypto
+    system, a CBC (cipher bock chaining) is used, which means that all previous
+    data will be used to encrypt the next data, the initial vectors purpose is
+    to jump start that, and make the system more secure.  When debug is used
+    it will spit out the key to the user, in a more readable format than just
+    std::cout.</P>
+
+  <H3>Encrypt</H3>
+  <P>will use the key and the iv from generateKey, and encrypt the array of data
+    that is put into the function.
+    for encrypting data (in char[] or unsigned char[] format
+    uses blowfish for an algorithm by default.  I can't seem to get it to
+    work properly, it is clipping the very end of each string, if I don't
+    muck with the string size, I know why this is, it's because the blowfish
+    algorithm does data expansion when it encrypts files, so you have to
+    take the size of the iv (initial vector) which is used in data changing
+    mode, and add it onto the size of the data that you are operating on
+    this will save a slightly (depending on how large the data is that you
+    are operating on) larger data set than the original, but it will be
+    encrypted</P>
+
+  <H3>Decrypt</H3>
+
+  <P>same as encrypt, very similar function, just goes the opposite way.</P>
+
+
+</article>
+

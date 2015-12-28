@@ -1,0 +1,46 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH STWEBD 1 "NOVEMBER 2004" Linux "User Manuals"
+.SH NAME
+stwebd \- simple threaded web server deamon
+.SH SYNOPSIS
+.B stwebd
+.SH DESCRIPTION
+.B stwebd is a simple threaded web server. There are a number of 
+seetings that you can configure in the config file.  These settings 
+are read into the web server when it starts up.  When the server starts 
+it begins listening to an assigned port for incomming connections.  When 
+a connection is recieved the server signals a thread to handle the request. 
+So far the only requests that can be handled are simple GET requests.  The 
+surver simply opens the requested file and returns it to the requestor or 
+an appropriate error message.
+.SH SIGNALS
+.B SIGINT
+Dump the status information to stdout
+
+SIGUSR1
+Shutdown. Disallow new connections, wait for existing connections to 
+shutdown, terminate the server.
+
+SIGUSR2
+Restart the web server.  This is a soft restart, let old connections finished 
+with the old configuration, while new connections get the new configuration.
+
+SIGHUP 
+Restart the web server.  This is a hard restart, all active connections
+are closed.
+
+.SH FILES
+.I .srvcfg 
+.RS
+This is the main configuration file for the web server.  The file 
+lets you specify options in a OPTION VALUE format.  There are 4 options that you 
+can currently list for the server.  They are: PORT, CONNECTIONS, LOGPATH, and 
+PAGEPATH.  The port is the active port that the server should listen on.  Connections 
+specifies the number of threads that you wish to have waiting around to service a 
+request.  The logpath is the absolute or realative path to the Log File.  The final 
+option specifies the root directory for the web pages that you want to server.
+.SH AUTHOR
+.B Corey Auger
+

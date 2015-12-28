@@ -1,0 +1,23 @@
+<!doctype linuxdoc system>
+
+<article>
+	<title>Cpsc 550 - Interprocess Communication Example</title>
+	<author>Corey Auger, <tt>auger@cpsc.ucalgary.ca</tt></author>
+	<date>v1.0, Nov 15 2004</date>
+	
+	<abstract>
+	This document is in regards to the CPSC 550 assignment 2 ( Interprocess Communication ) Web Server.
+	The program is designed to parse through a configuration file that tells the system what port to listen 
+	for connections on.  It also tells the system how many threads to use to service requests.  When 
+	a connection is formed the program wakes a thread from our thread pool to handle the request.  When 
+	the request is complete the thread goes back to sleep in the thread pool.  There are a number of 
+	signals that the program handles as well.  These are explained in full detail in the document.
+	</abstract>
+
+	<toc>
+
+	<sect>Compiling from Source</sect>
+
+
+
+</article>

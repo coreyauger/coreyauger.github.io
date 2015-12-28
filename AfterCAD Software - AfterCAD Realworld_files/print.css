@@ -1,0 +1,68 @@
+
+body {
+	background: white;
+	font-size: 10pt;	
+	}
+
+h1,h2,h3,h4,h5,h6 {font-size:14px;color:#2288BB;}	
+	
+
+
+#header {background:none;visibility:hidden;}
+#navwrapper {visibility:visible;}
+#righttopnav {visibility:visible;}
+#navigation {visibility:visible;}
+#topnav {visibility:visible;}
+#logo {visibility:visible;}
+
+#bordertop {display:none;}
+#borderbtm {display:none;}
+	
+#wrapper {border:none;}	
+	
+#wrapper, #content, table, td {
+	width: auto; 
+	margin: 0 3%;
+	padding: 0; 
+	border: 0;
+	float: none !important;
+	color: black; 
+	background: transparent;
+
+	}
+
+div#leftcolumn {display:all;}
+div#leftcolumn	{display:all;}	
+	
+div#leftcolumn {visibility:visible;}
+div#leftcolumn	{visibility:visible;}
+
+
+	
+#display01,#display02,#solproducts,#news, #smallboxes {border:none;font-size:12px;}
+		
+	
+	a:link, a:visited {
+	color: #520;
+	font-size:12px;
+	background: transparent;
+	font-weight: bold;
+	text-decoration: underline;
+	}
+	 
+ .insideborder {
+	border:none;
+	}
+ 
+  
+ .top-left, .top-right, .bottom-left, .bottom-right { 
+	background:none; 
+	
+	}
+ 
+   
+   
+   
+
+	
+	
